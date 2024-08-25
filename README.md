@@ -4,75 +4,50 @@ This project is a FastAPI-based mock API for logistics operations. It uses SQLit
 
 ## Prerequisites
 
-- A Hetzner VPS with Ubuntu 20.04 or later
-- SSH access to your VPS
-- Docker installed on your VPS
+- Docker
+- Make (optional, for using the Makefile commands)
 
-## Setup Instructions
+## Local Development Setup
 
-1. SSH into your Hetzner VPS:
-   ```
-   ssh username@your_server_ip
-   ```
-
-2. Install Docker following the official Docker documentation for Ubuntu:
-   https://docs.docker.com/engine/install/ubuntu/
-
-   Follow the steps in the "Install using the repository" section, which includes:
-   - Updating the apt package index
-   - Installing packages to allow apt to use a repository over HTTPS
-   - Adding Docker's official GPG key
-   - Setting up the stable repository
-   - Installing Docker Engine
-
-3. Start and enable Docker:
-   ```
-   sudo systemctl start docker
-   sudo systemctl enable docker
-   ```
-
-4. Clone the repository:
+1. Clone the repository:
    ```
    git clone https://github.com/s04/logistics-mock-api.git
    cd logistics-mock-api
    ```
 
-5. Build the Docker image:
+2. Build the Docker image:
    ```
-   sudo docker build -t logistics-mock-api .
+   make build
    ```
-
-6. Run the Docker container, exposing it on port 80:
+   or
    ```
-   sudo docker run -d -p 80:80 --name logistics-mock-api logistics-mock-api
-   ```
-
-7. Configure the firewall to allow traffic on port 80 (HTTP):
-   ```
-   sudo ufw allow 80/tcp
-   sudo ufw reload
+   docker build -t logistics-mock-api .
    ```
 
-   Note: If you haven't already allowed SSH access, make sure to do so:
+3. Run the Docker container:
    ```
-   sudo ufw allow 22/tcp
+   make run
+   ```
+   or
+   ```
+   docker run -d -p 8000:80 --name logistics-mock-api-local logistics-mock-api
    ```
 
-## Testing the API
+4. The API will now be accessible at `http://localhost:8000`
 
-You can now access the API from outside the server using the following URL:
+## Makefile Commands
 
-```
-http://your_server_ip
-```
+This project includes a Makefile to simplify common development tasks. Here are the available commands:
 
-Replace `your_server_ip` with the actual IP address of your Hetzner VPS or your domain name if you've set up DNS.
-
-To access the OpenAPI documentation and test the endpoints, visit:
-
-```
-http://your_server_ip/docs
-```
+- `make build`: Build the Docker image
+- `make run`: Run the Docker container
+- `make stop`: Stop the Docker container
+- `make clean`: Stop and remove the Docker container
+- `make restart`: Rebuild and restart the Docker container
+- `make logs`: Show container logs
+- `make shell`: Enter the container shell
+- `make test`: Run tests (if configured)
+- `make help`: Show all available make commands
 
 ## API Endpoints
 
@@ -87,19 +62,47 @@ http://your_server_ip/docs
 - `PUT /orders/{order_id}`: Update an order
 - `DELETE /orders/{order_id}`: Delete an order
 
-## Stopping and Removing the Container
+## Testing the API
 
-To stop the container:
-
-```
-sudo docker stop logistics-mock-api
-```
-
-To remove the container:
+You can access the OpenAPI documentation and test the endpoints by visiting:
 
 ```
-sudo docker rm logistics-mock-api
+http://localhost:8000/docs
 ```
+
+## Deployment on Hetzner VPS
+
+For deploying this API on a Hetzner VPS, follow these steps:
+
+1. SSH into your Hetzner VPS:
+   ```
+   ssh username@your_server_ip
+   ```
+
+2. Install Docker following the official Docker documentation for Ubuntu:
+   https://docs.docker.com/engine/install/ubuntu/
+
+3. Start and enable Docker:
+   ```
+   sudo systemctl start docker
+   sudo systemctl enable docker
+   ```
+
+4. Clone the repository and navigate to the project directory.
+
+5. Build and run the Docker container:
+   ```
+   sudo docker build -t logistics-mock-api .
+   sudo docker run -d -p 80:80 --name logistics-mock-api logistics-mock-api
+   ```
+
+6. Configure the firewall to allow traffic on port 80 (HTTP):
+   ```
+   sudo ufw allow 80/tcp
+   sudo ufw reload
+   ```
+
+The API will now be accessible at `http://your_server_ip`
 
 ## Updating the API
 
@@ -109,36 +112,42 @@ To update the API with new changes:
    ```
    git pull origin main
    ```
-2. Rebuild the Docker image:
+
+2. Rebuild and restart the container:
    ```
-   sudo docker build -t logistics-mock-api .
+   make restart
    ```
-3. Stop and remove the old container:
+   or
    ```
    sudo docker stop logistics-mock-api
    sudo docker rm logistics-mock-api
-   ```
-4. Run a new container with the updated image:
-   ```
+   sudo docker build -t logistics-mock-api .
    sudo docker run -d -p 80:80 --name logistics-mock-api logistics-mock-api
    ```
 
 ## Troubleshooting
 
-- If you can't access the API, ensure that port 80 is open in your Hetzner VPS firewall settings.
+- If you can't access the API, ensure that the correct port is open in your firewall settings.
 - Check the Docker logs for any errors:
+  ```
+  make logs
+  ```
+  or
   ```
   sudo docker logs logistics-mock-api
   ```
-- If you're using a domain name and it's not working, check your DNS settings to ensure they're pointing to the correct IP address.
 
-For any other issues or questions, please open an issue in the GitHub repository: https://github.com/s04/logistics-mock-api
+For any other issues or questions, please open an issue in the GitHub repository.
 
 ## Security Considerations
 
-Running a service on port 80 exposes it to the public internet. For production use, consider the following:
+For production use, consider the following:
 
 1. Set up HTTPS using a reverse proxy like Nginx and Let's Encrypt for SSL/TLS certificates.
 2. Implement proper authentication and authorization mechanisms in your API.
 3. Regularly update your server and Docker images to patch any security vulnerabilities.
 4. Consider using a Web Application Firewall (WAF) for additional protection.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
