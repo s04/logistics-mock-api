@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from ..models.database import get_db
 from ..models.order import Order, OrderItem, OrderStatus
 from ..models.item import Item
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List
+from datetime import datetime
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ class OrderItemOutput(OrderItemInput):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class OrderOutput(BaseModel):
@@ -35,7 +36,13 @@ class OrderOutput(BaseModel):
     created_at: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+    @validator("created_at", pre=True)
+    def convert_created_at(cls, value):
+        if isinstance(value, datetime):
+            return value.isoformat()
+        return value
 
 
 class OrderUpdate(BaseModel):
