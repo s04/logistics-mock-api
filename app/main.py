@@ -3,10 +3,34 @@ from .routers import items, orders
 from .models.database import engine, Base
 import random
 from datetime import datetime, timedelta
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Items and Orders API", version="1.0.0")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+
+class HSTSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
+        return response
+
+
+app.add_middleware(HSTSMiddleware)
+
 
 app.include_router(items.router, tags=["items"])
 app.include_router(orders.router, tags=["orders"])

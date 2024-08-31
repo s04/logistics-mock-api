@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
 from ..models.database import get_db
 from ..models.order import Order, OrderItem, OrderStatus
 from ..models.item import Item
@@ -24,7 +25,7 @@ class OrderItemOutput(OrderItemInput):
     id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class OrderOutput(BaseModel):
@@ -36,7 +37,7 @@ class OrderOutput(BaseModel):
     created_at: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
     @validator("created_at", pre=True)
     def convert_created_at(cls, value):
@@ -47,6 +48,19 @@ class OrderOutput(BaseModel):
 
 class OrderUpdate(BaseModel):
     status: OrderStatus
+
+
+@router.options("/orders")
+async def options_orders():
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Allow": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type",
+        },
+    )
 
 
 @router.get("/orders", response_model=List[OrderOutput])
